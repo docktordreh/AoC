@@ -4,12 +4,6 @@
 #include <fstream>
 #include <iostream>
 #include <string>
-struct elve {
-  int id;
-  int calories;
-  elve(int id) : id(id) {}
-};
-bool operator<(elve e1, elve e2) { return e1.calories < e2.calories; }
 
 int main() {
   std::ifstream in;
