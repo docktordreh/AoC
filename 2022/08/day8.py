@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-def in_bounds(pos_y: int, pos_x: int, map: list) -> bool:
+from typing import List
+def in_bounds(pos_y: int, pos_x: int, map: List[List[int]]) -> bool:
     """check if a position is in bounds in the 2 dimensional array `map`"""
     return (
         pos_y <= len(map) - 1
@@ -9,7 +10,7 @@ def in_bounds(pos_y: int, pos_x: int, map: list) -> bool:
     )
 
 
-def visible_from_outside(pos_y: int, pos_x: int, map: list):
+def visible_from_outside(pos_y: int, pos_x: int, map: List[List[int]]):
     """
     check if a position is visible from outside the grid
     visibility is defined that all values in one direction of the two-dimensional array `map`
@@ -26,7 +27,7 @@ def visible_from_outside(pos_y: int, pos_x: int, map: list):
     return result
 
 
-def scenic_score_for_pos(pos_y: int, pos_x: int, map: list):
+def scenic_score_for_pos(pos_y: int, pos_x: int, map: List[List[int]]):
     """
     calculates the amount of trees visible per direction in the two-dimensional array `map`
     visibility is defined that all values in one direction of the two-dimensional array `map`
@@ -43,7 +44,7 @@ def scenic_score_for_pos(pos_y: int, pos_x: int, map: list):
     return scenic_score
 
 
-def count_visible(pos_y: int, pos_x: int, map: list, height: int, vect: dict) -> int:
+def count_visible(pos_y: int, pos_x: int, map: List[List[int]], height: int, vect: dict) -> int:
     """
     count the amount of visible trees in a given direction `vect`
     values smaller are always seen, visibility stops at equal or higher values
@@ -58,7 +59,7 @@ def count_visible(pos_y: int, pos_x: int, map: list, height: int, vect: dict) ->
     return 1 + count_visible(pos_y, pos_x, map, height, vect)
 
 
-def visible(pos_y: int, pos_x: int, map: list, height: int, vect: dict) -> bool:
+def visible(pos_y: int, pos_x: int, map: List[List[int]], height: int, vect: dict) -> bool:
     """
     check if all trees in a given direction are smaller, stops at the bounds of the array.
     Exits early, when finding a higher value than the given height.
@@ -70,7 +71,7 @@ def visible(pos_y: int, pos_x: int, map: list, height: int, vect: dict) -> bool:
     return height > map[pos_y][pos_x] and visible(pos_y, pos_x, map, height, vect)
 
 
-map: list = [[int(i) for i in x] for x in open("day8.txt", "r").read().splitlines()]
+map: List[List[int]] = [[int(i) for i in x] for x in open("day8.txt", "r").read().splitlines()]
 p1 = 0
 p2 = 0
 
