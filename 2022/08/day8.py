@@ -38,7 +38,6 @@ def scenic_score_for_pos(pos_y: int, pos_x: int, map: list):
     vects = [{"x": 1, "y": 0}, {"x": -1, "y": 0}, {"x": 0, "y": 1}, {"x": 0, "y": -1}]
     scenic_score = 1
     for x in vects:
-        print(f"calc for vect {x}")
         scenic_score = count_visible(pos_y, pos_x, map, height, x) * scenic_score
     return scenic_score
 
@@ -49,13 +48,12 @@ def count_visible(pos_y: int, pos_x: int, map: list, height: int, vect: dict) ->
     values smaller are always seen, visibility stops at equal or higher values
     (but the higher values are seen as well)
     """
-    pos_y += vect["y"]
-    pos_x += vect["x"]
-    if not in_bounds(pos_y, pos_x, map):
-        return 0
-    if height <= map[pos_y][pos_x]:
-        return 1
-    return 1 + count_visible(pos_y, pos_x, map, height, vect)
+    count=0
+    while in_bounds(pos_y, pos_x, map) and height > map[pos_y][pos_x]:
+        pos_y += vect["y"]
+        pos_x += vect["x"]
+        count+=1
+    return count
 
 
 def visible(pos_y: int, pos_x: int, map: list, height: int, vect: dict) -> bool:
@@ -64,10 +62,13 @@ def visible(pos_y: int, pos_x: int, map: list, height: int, vect: dict) -> bool:
     Exits early, when finding a higher value than the given height.
     """
     pos_y += vect["y"]
-    pos_x += vect["x"]
-    if not in_bounds(pos_y, pos_x, map):
-        return True
-    return height > map[pos_y][pos_x] and visible(pos_y, pos_x, map, height, vect)
+    pos_x += vect["y"]
+    while in_bounds(pos_y, pos_x, map):
+        if height <= map[pos_y][pos_x]:
+            return False
+        pos_y += vect["y"]
+        pos_x += vect["y"]
+    return True
 
 
 map: list = [[int(i) for i in x] for x in open("day8.txt", "r").read().splitlines()]
