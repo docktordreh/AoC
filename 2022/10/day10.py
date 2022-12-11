@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from typing import List, Dict
+import sys
 from enum import Enum
 from functools import reduce
 import operator
@@ -41,19 +42,33 @@ class CathodeRayTube:
     def __init__(self, width=40, height=6):
         self.width = width
         self.height = height
-        self.pixels = [[False for _ in range(width)] for _ in range(height)]
+        self.pixels = [[None for _ in range(width)] for _ in range(height)]
         pass
 
-    def in_bounds(self, position:int):
-        return position>=(self.width-1)
+    def draw(self, sprite_pos: int, cycle: int):
+        y: int = (cycle - 1) // 40
+        x: int = cycle - 1 - (y * 40)
+        print(f"during cycle {cycle}: CRT draws pixel in position {x}")
+        if x in [sprite_pos - 1, sprite_pos, sprite_pos + 1]:
+            self.pixels[y][x] = True
+        else:
+            self.pixels[y][x] = False
+        p: str = ""
+        for pix in self.pixels[y]:
+            p += "" if pix is None else ("." if not pix else "#")
+        print(f"Current CRT row: {p}")
 
-    def change_sprite_pos(self, position:int, cycle_count_drawing:int):
-        if not self.in_bounds(position):
-            raise ValueError(f"{position} is not a valid position")
-        pass
-
-    def print(self):
-        pass
+    def __repr__(self):
+        pix: str = ""
+        for y in range(0, len(self.pixels)):
+            for x in range(0, len(self.pixels[y])):
+                pix += (
+                    ""
+                    if self.pixels[y][x] is None
+                    else ("#" if self.pixels[y][x] else ".")
+                )
+            pix += "\n"
+        return pix
 
 
 class CPU:
@@ -71,9 +86,6 @@ class CPU:
         """
         self.register = register_init
         self.crt = crt
-
-    def draw(self, count_cycles):
-        self.crt.change_sprite_pos(self.register, count_cycles)
 
     def noop(self):
         pass
@@ -123,6 +135,17 @@ class ClockCircuit:
     def get_signal_strength_at(self, count_cycle: int):
         return self.signal_strength[count_cycle]
 
+    def cycle(self, instruction: str):
+        self.count_cycles += 1
+        print("\n")
+        print(f"start cycle {self.count_cycles}: begin executing {instruction}")
+        self.signal_strength.append(self.cpu.get_signal(self.count_cycles))
+        self.crt.draw(self.get_cpu_register_val(), self.count_cycles)
+        if self.count_cycles == 240:
+            print(self.crt)
+            sys.exit(5)
+            pass
+
     def schedule_instruction(self, instruction: str):
         """
         schedules an instruction
@@ -130,17 +153,28 @@ class ClockCircuit:
         instr: Instructions = Instructions[instruction.split()[0]]
         cost: int = self.cost[instr.value]
         for _ in range(cost):
-            self.count_cycles += 1
-            self.signal_strength.append(self.cpu.get_signal(self.count_cycles))
-            if self.count_cycles in [20, 60, 100, 140, 180, 220]:
-                print(
-                    f"signal strength at {self.count_cycles} is {self.cpu.get_signal(self.count_cycles)}"
-                )
+            self.cycle(instruction)
         if instr == Instructions.noop:
             self.cpu.noop()
+            print(f"End of cycle {self.count_cycles}: finish executing {instruction}")
             return
         if instr == Instructions.addx:
             self.cpu.addx(int(instruction.split()[1]))
+            print(
+                f"End of cycle {self.count_cycles}: finish executing {instruction} (Register X {self.get_cpu_register_val()})"
+            )
+            sprite: List[str] = [
+                "."
+                if not i
+                in [
+                    self.get_cpu_register_val(),
+                    self.get_cpu_register_val() + 1,
+                    self.get_cpu_register_val() - 1,
+                ]
+                else "#"
+                for i in range(0, self.crt.width)
+            ]
+            print(f"Sprite position: {''.join(sprite)}")
             return
 
 
@@ -157,3 +191,4 @@ sol1 = reduce(
     ],
 )
 print(sol1)
+print(cc.crt)
